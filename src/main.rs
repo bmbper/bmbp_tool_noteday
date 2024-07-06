@@ -1,20 +1,23 @@
 mod app;
-mod calcander;
 mod da;
-mod fourarea;
-mod inbox;
+mod data;
+mod part;
+mod util;
+mod view;
 
+use egui::{vec2, ViewportBuilder};
 use app::NoteDayApp;
-use da::DayDialog;
 
 fn main() -> eframe::Result<()> {
+    // 设置初始化窗口大小
+    let viewport = ViewportBuilder::default().with_inner_size(vec2(1920.0,1080.0));
     let options = eframe::NativeOptions {
+        viewport,
         ..Default::default()
     };
-    let mut app_dialog = DayDialog::new();
     eframe::run_native(
-        "日历记事本",
+        "NoteDay",
         options,
-        Box::new(|cc| Box::new(NoteDayApp::new(cc))),
+        Box::new(|cc|Ok( Box::new(NoteDayApp::new(cc)))),
     )
 }
