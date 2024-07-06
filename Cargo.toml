@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 egui = "0.28.1"
 eframe = "0.28.1"
+egui_extras = { version = "0.28.1", features = ["all_loaders"] }
+image = { version = "0.25.1", features = ["jpeg", "png"] }
+
 serde = { version = "1.0.203", features = ["derive"] }
 chrono = "0.4.19"
 uuid = { version = "0.8", features = ["serde", "v4"] }

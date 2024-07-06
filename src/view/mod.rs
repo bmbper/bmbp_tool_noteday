@@ -1,5 +1,8 @@
 mod calendar;
 mod inbox;
 mod quadrant;
-mod tookit;
+mod toolkit;
 pub use calendar::*;
+pub use inbox::*;
+pub use quadrant::*;
+pub use toolkit::*;

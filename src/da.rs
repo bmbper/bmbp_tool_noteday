@@ -1,9 +1,10 @@
 use egui::{Context, Label};
-
+#[allow(dead_code)]
 pub struct DayDialog {
     pub show_dialog: bool,
     pub text: String,
 }
+#[allow(dead_code)]
 impl DayDialog {
     pub fn new() -> Self {
         DayDialog {

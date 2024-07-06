@@ -1,6 +1,6 @@
-use egui::Ui;
-use serde::Serialize;
 use crate::util::guid_str;
+use egui::{Rounding, Ui};
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct ItemRecord {
@@ -25,12 +25,17 @@ impl ItemRecord {
     pub fn show(&mut self, ui: &mut Ui) {
         ui.horizontal(|ui| {
             if !self.status {
-                ui.checkbox(&mut self.status, "".to_string());
+                let checked_img = egui::include_image!("../../image/checkbox_uncheck.png");
+                if ui.image(checked_img).clicked() {
+                    self.status = true;
+                }
             } else {
-                if ui.label("v".to_string()).clicked() {
+                let checked_img = egui::include_image!("../../image/checkbox_checked.png");
+                if ui.image(checked_img).clicked() {
                     self.status = false;
                 }
             }
+            ui.set_width(120.0);
             ui.label(self.content.clone());
             ui.label("...".to_string());
         });

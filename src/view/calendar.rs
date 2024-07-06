@@ -1,8 +1,8 @@
-use eframe::emath::{Align, Vec2};
-use egui::{Context, Ui};
-use egui::panel::TopBottomSide;
 use crate::part::DayItem;
 use crate::util::{get_calendar_week_days, get_current_y_m_d};
+use eframe::emath::{Align, Vec2};
+use egui::panel::TopBottomSide;
+use egui::{Context, Ui};
 
 pub struct CalendarView {
     days: Vec<DayItem>,
@@ -22,7 +22,8 @@ impl CalendarView {
         cal
     }
     pub fn init_data(&mut self) {
-        let cal_days = get_calendar_week_days(self.current_year.clone(), self.current_month.clone());
+        let cal_days =
+            get_calendar_week_days(self.current_year.clone(), self.current_month.clone());
         let mut items = vec![];
         for item in cal_days {
             items.push(DayItem::with_day(item))
@@ -49,10 +50,9 @@ impl CalendarView {
     }
 }
 
-
 impl CalendarView {
     pub fn show(&mut self, ctx: &Context, ui: &mut Ui) {
-        ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
+        ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |_| {
             egui::TopBottomPanel::new(TopBottomSide::Top, "tbar_top").show(ctx, |ui| {
                 ui.set_height(32.0);
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
@@ -84,7 +84,7 @@ impl CalendarView {
                             ui.end_row();
                             let length = self.days.len();
                             for index in 0..length {
-                                self.days[index].show(ui);
+                                self.days[index].show(ui, self.current_month);
                                 if index != 0 && (index + 1) % 7 == 0 {
                                     ui.end_row();
                                 }

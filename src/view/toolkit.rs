@@ -1,13 +1,13 @@
 use egui::Context;
 
 #[derive(Debug)]
-pub struct QuadrantView {}
+pub struct ToolkitView {}
 
-impl QuadrantView {
+impl ToolkitView {
     pub fn new() -> Self {
-        QuadrantView {}
+        ToolkitView {}
     }
     pub fn show(&mut self, _ctx: &Context, ui: &mut egui::Ui) {
-        ui.label("轻重缓急邮箱");
+        ui.label("工具箱");
     }
 }
