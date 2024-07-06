@@ -46,6 +46,8 @@ impl NoteDayApp {
             .insert(egui::FontFamily::Proportional, vec!["app_font".to_owned()]);
         // 应用字体定义
         ctx.egui_ctx.set_fonts(fonts);
+        // 注册图片加载器
+        egui_extras::install_image_loaders(&ctx.egui_ctx);
     }
 }
 
