@@ -1,16 +1,23 @@
 use chrono::Datelike;
-use egui::{Align, Color32};
+use egui::{Align, Color32, Context};
 
-use crate::{data::ItemRecord, util::to_date};
+use crate::util::to_date;
+
+use super::DayItemRecord;
 
 pub struct DayItem {
     day: String,
-    data: Vec<ItemRecord>,
+    data: Vec<DayItemRecord>,
+    show_dialog: bool,
 }
 
 impl DayItem {
     pub(crate) fn with_day(day: String) -> Self {
-        DayItem { day, data: vec![] }
+        DayItem {
+            day,
+            data: vec![],
+            show_dialog: false,
+        }
     }
 }
 
@@ -21,7 +28,7 @@ impl DayItem {
 }
 
 impl DayItem {
-    pub fn show(&mut self, ui: &mut egui::Ui, current_month: u32) {
+    pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, current_month: u32) {
         ui.vertical(|ui| {
             let rect_width = 225.0;
             let rect_height = 180.0;
@@ -49,7 +56,10 @@ impl DayItem {
                             ui.label(self.day.clone());
                             if self.is_current_month(current_month) {
                                 if ui.button("+").clicked() {
-                                    self.data.push(ItemRecord::with_day(self.day.clone()));
+                                    self.show_dialog = true;
+                                }
+                                if self.show_dialog {
+                                    self.show_add_dialog(ctx, ui);
                                 }
                             }
                         });
@@ -63,15 +73,34 @@ impl DayItem {
                                         for item in self.data.as_mut_slice() {
                                             item.show(ui);
                                         }
-                                        let egui_icon = egui::include_image!(
-                                            "../../image/checkbox_checked.png"
-                                        );
-                                        ui.add(egui::Image::new(egui_icon.clone()));
                                     },
                                 );
                             });
                     });
                 });
         });
+    }
+
+    pub fn show_add_dialog(&mut self, ctx: &Context, ui: &mut egui::Ui) {
+        self.show_dialog = true;
+        println!("===>{}", self.show_dialog);
+        let data = DayItemRecord::with_day(self.day.clone());
+        egui::Window::new("确认对话框")
+            .id(egui::Id::new(self.day.clone()))
+            .resizable(false)
+            .collapsible(false)
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    if ui.button("确认").clicked() {
+                        // 这里执行确认操作后关闭对话框
+                        self.show_dialog = false;
+                    }
+                    if ui.button("取消").clicked() {
+                        // 直接关闭对话框
+                        self.show_dialog = false;
+                    }
+                });
+                ui.add(egui::Label::new(format!("这是一个示例对话框{}", self.day)));
+            });
     }
 }

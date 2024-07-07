@@ -84,7 +84,7 @@ impl CalendarView {
                             ui.end_row();
                             let length = self.days.len();
                             for index in 0..length {
-                                self.days[index].show(ui, self.current_month);
+                                self.days[index].show(ctx, ui, self.current_month);
                                 if index != 0 && (index + 1) % 7 == 0 {
                                     ui.end_row();
                                 }
