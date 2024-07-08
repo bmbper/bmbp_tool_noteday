@@ -1,9 +1,10 @@
 mod app;
-mod da;
 mod data;
 mod part;
 mod util;
 mod view;
+mod dialog;
+mod orm;
 
 use egui::{vec2, ViewportBuilder};
 use app::NoteDayApp;

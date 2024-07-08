@@ -1,22 +1,24 @@
-use crate::part::DayItem;
 use crate::util::{get_calendar_week_days, get_current_y_m_d};
 use eframe::emath::{Align, Vec2};
 use egui::panel::TopBottomSide;
 use egui::{Context, Ui};
+use crate::part::DayItem;
 
 pub struct CalendarView {
-    days: Vec<DayItem>,
     current_year: i32,
     current_month: u32,
+    current_days: Vec<String>,
+    item_view: Vec<DayItem>,
 }
 
 impl CalendarView {
     pub fn new() -> Self {
         let (current_year, current_month, _) = get_current_y_m_d();
         let mut cal = CalendarView {
-            days: vec![],
+            current_days: vec![],
             current_year,
             current_month,
+            item_view: vec![],
         };
         cal.init_data();
         cal
@@ -24,11 +26,10 @@ impl CalendarView {
     pub fn init_data(&mut self) {
         let cal_days =
             get_calendar_week_days(self.current_year.clone(), self.current_month.clone());
-        let mut items = vec![];
-        for item in cal_days {
-            items.push(DayItem::with_day(item))
+        self.current_days = cal_days;
+        for day in &self.current_days {
+            self.item_view.push(DayItem::with_day(day.clone()));
         }
-        self.days = items;
     }
     pub fn on_next_month(&mut self) {
         if self.current_month == 12 {
@@ -82,9 +83,9 @@ impl CalendarView {
                             ui.label("星期六");
                             ui.label("星期七");
                             ui.end_row();
-                            let length = self.days.len();
+                            let length = self.current_days.len();
                             for index in 0..length {
-                                self.days[index].show(ctx, ui, self.current_month);
+                                self.item_view[index].show(ctx, ui, self.current_month.clone());
                                 if index != 0 && (index + 1) % 7 == 0 {
                                     ui.end_row();
                                 }

@@ -1,35 +1,37 @@
-use crate::{data::ItemRecord, util::guid_str};
+use eframe::epaint::text::TextWrapMode;
+use crate::{data::NoteItem};
 use egui::{Color32, Stroke, Ui};
 use serde::Serialize;
+use crate::data::DayNote;
+use crate::orm::Orm;
+
 #[derive(Debug, Serialize)]
-pub struct DayItemRecord {
+pub struct DayItemRecord<'a> {
     pub day: String,
-    pub data: ItemRecord,
+    pub data: &'a mut NoteItem,
 }
 
-impl DayItemRecord {
-    pub fn with_day(day: String) -> Self {
+
+impl<'a> DayItemRecord<'a> {
+    pub fn with_note(note: &'a mut NoteItem) -> Self {
         DayItemRecord {
-            day: day.clone(),
-            data: ItemRecord {
-                id: guid_str(),
-                content: "".to_string(),
-                status: false,
-                day: day.clone(),
-            },
+            day: note.record_day.clone(),
+            data: note,
         }
+    }
+    pub fn save_data(&self) {
+        let day = self.day.clone();
+        let data = self.data.clone();
+        let mut day_note = Orm::read::<DayNote>(day).unwrap();
+        day_note.note.insert(data.id.clone(), data);
+        Orm::write::<DayNote>(self.day.clone(), day_note);
     }
 }
 
-impl DayItemRecord {
+impl<'a> DayItemRecord<'a> {
     pub fn show(&mut self, ui: &mut Ui) {
         ui.set_width(225.0);
         ui.set_max_width(225.0);
-        ui.columns(3, |ui| {
-            ui[0].label("ADDDDDDDDDDDD");
-            ui[1].label("BBBBBBBBBBBBBB");
-            ui[2].label("A");
-        });
         ui.horizontal(|ui| {
             if !self.data.status {
                 if ui
@@ -37,12 +39,13 @@ impl DayItemRecord {
                         egui::Button::image(egui::include_image!(
                             "../../image/checkbox_uncheck.png"
                         ))
-                        .fill(egui::Color32::TRANSPARENT)
-                        .stroke(Stroke::new(0.0, Color32::TRANSPARENT)),
+                            .fill(egui::Color32::TRANSPARENT)
+                            .stroke(Stroke::new(0.0, Color32::TRANSPARENT)),
                     )
                     .clicked()
                 {
                     self.data.status = true;
+                    self.save_data();
                 }
             } else {
                 if ui
@@ -50,18 +53,16 @@ impl DayItemRecord {
                         egui::Button::image(egui::include_image!(
                             "../../image/checkbox_checked.png"
                         ))
-                        .fill(egui::Color32::TRANSPARENT)
-                        .stroke(Stroke::new(0.0, Color32::TRANSPARENT)),
+                            .fill(egui::Color32::TRANSPARENT)
+                            .stroke(Stroke::new(0.0, Color32::TRANSPARENT)),
                     )
                     .clicked()
                 {
                     self.data.status = false;
                 }
             }
-
-            let label = egui::Label::new("ksf").wrap_mode(egui::TextWrapMode::Truncate);
+            let label = egui::Label::new(self.data.title.clone()).wrap_mode(TextWrapMode::Truncate);
             ui.add(label);
-            ui.label("...".to_string());
         });
     }
 }
