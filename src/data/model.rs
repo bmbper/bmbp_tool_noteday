@@ -3,7 +3,7 @@ use std::iter::Map;
 use chrono::{Local, NaiveDate};
 use crate::util::guid_str;
 use serde::{Deserialize, Serialize};
-use crate::part::DayItemRecord;
+use crate::part::ItemView;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NoteItem {

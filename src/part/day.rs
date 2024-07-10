@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use chrono::{Datelike};
 use egui::{Align, Color32, Context};
 use crate::data::{DayNote, NoteItem};
@@ -5,34 +6,38 @@ use crate::data::Quadrant::{ImportantLazy, ImportantOnce, NormalLazy, NormalOnce
 use crate::orm::Orm;
 use crate::util::{to_date};
 
-use super::DayItemRecord;
+use super::ItemView;
 
-pub struct DayItem {
+pub struct DayView {
     day: String,
     data: Option<DayNote>,
     current_data: Option<NoteItem>,
     show_dialog: bool,
 }
 
-impl DayItem {
+impl DayView {
     pub(crate) fn with_day(day: String) -> Self {
         let day_note = Orm::read(day.clone());
-        DayItem {
+        DayView {
             day,
             data: day_note,
             current_data: None,
             show_dialog: false,
         }
     }
+    pub fn reload_data(&mut self) {
+        let day_note = Orm::read(self.day.clone());
+        self.data = day_note;
+    }
 }
 
-impl DayItem {
+impl DayView {
     pub fn is_current_month(&self, current_month: u32) -> bool {
         to_date(self.day.clone()).month() == current_month
     }
 }
 
-impl DayItem {
+impl DayView {
     pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, current_month: u32) {
         ui.vertical(|ui| {
             let rect_width = 225.0;
@@ -75,10 +80,12 @@ impl DayItem {
                                 ui.with_layout(
                                     egui::Layout::top_down_justified(Align::TOP),
                                     |ui| {
-                                        if let Some(dayNote) = self.data.as_mut() {
-                                            for (id, note) in dayNote.note.iter_mut() {
-                                                DayItemRecord::with_note(note).show(ui);
-                                            }
+                                        if self.data.is_none() {
+                                            return;
+                                        }
+                                        let dayNote = self.data.as_ref().unwrap().note.clone();
+                                        for (id, note) in dayNote {
+                                            ItemView::with_note(self, note).show(ui);
                                         }
                                     },
                                 );

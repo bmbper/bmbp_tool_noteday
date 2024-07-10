@@ -2,13 +2,13 @@ use crate::util::{get_calendar_week_days, get_current_y_m_d};
 use eframe::emath::{Align, Vec2};
 use egui::panel::TopBottomSide;
 use egui::{Context, Ui};
-use crate::part::DayItem;
+use crate::part::DayView;
 
 pub struct CalendarView {
     current_year: i32,
     current_month: u32,
     current_days: Vec<String>,
-    item_view: Vec<DayItem>,
+    item_view: Vec<DayView>,
 }
 
 impl CalendarView {
@@ -28,7 +28,7 @@ impl CalendarView {
             get_calendar_week_days(self.current_year.clone(), self.current_month.clone());
         self.current_days = cal_days;
         for day in &self.current_days {
-            self.item_view.push(DayItem::with_day(day.clone()));
+            self.item_view.push(DayView::with_day(day.clone()));
         }
     }
     pub fn on_next_month(&mut self) {
