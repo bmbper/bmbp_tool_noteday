@@ -53,7 +53,7 @@ impl CalendarView {
 
 impl CalendarView {
     pub fn show(&mut self, ctx: &Context, ui: &mut Ui) {
-        ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |_| {
+        ui.vertical(|_| {
             egui::TopBottomPanel::new(TopBottomSide::Top, "tbar_top").show(ctx, |ui| {
                 ui.set_height(32.0);
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {

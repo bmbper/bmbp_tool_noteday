@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use chrono::{Datelike};
 use egui::{Align, Color32, Context};
 use crate::data::{DayNote, NoteItem};
@@ -77,18 +76,17 @@ impl DayView {
                         egui::ScrollArea::vertical()
                             .id_source(self.day.clone())
                             .show(ui, |ui| {
-                                ui.with_layout(
-                                    egui::Layout::top_down_justified(Align::TOP),
-                                    |ui| {
-                                        if self.data.is_none() {
-                                            return;
-                                        }
-                                        let dayNote = self.data.as_ref().unwrap().note.clone();
-                                        for (id, note) in dayNote {
+                                if self.data.is_none() {
+                                    return;
+                                }
+                                ui.vertical(|ui| {
+                                    let day_note = self.data.as_ref().unwrap().note.clone();
+                                    for (id, note) in day_note {
+                                        ui.horizontal(|ui| {
                                             ItemView::with_note(self, note).show(ui);
-                                        }
-                                    },
-                                );
+                                        });
+                                    }
+                                });
                             });
                     });
                 });
