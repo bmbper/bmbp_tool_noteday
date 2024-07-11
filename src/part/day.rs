@@ -1,7 +1,6 @@
 use chrono::Datelike;
 use eframe::epaint::Stroke;
-use eframe::glow::RED;
-use egui::{Align, Color32, Context};
+use egui::{ Color32, Context};
 use egui_extras::StripBuilder;
 
 use crate::data::{DayNote, NoteItem};
@@ -112,7 +111,8 @@ impl DayView {
                         return;
                     }
                     ui.vertical(|ui| {
-                        let day_note = self.data.as_ref().unwrap().note.clone();
+                        let mut day_note:Vec<(String, NoteItem)> = self.data.as_ref().unwrap().note.clone().into_iter().collect();
+                        day_note.sort_by(|a,b|a.1.title.cmp(&b.1.title));
                         for (id, note) in day_note {
                             ui.horizontal(|ui| {
                                 ItemView::with_note(self, note).show(ui);

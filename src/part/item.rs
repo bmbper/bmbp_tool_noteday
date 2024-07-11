@@ -1,7 +1,6 @@
 use eframe::epaint::text::TextWrapMode;
 use crate::{data::NoteItem};
 use egui::{Color32, Stroke, Ui};
-use egui::epaint::text::layout;
 use egui_extras::StripBuilder;
 use crate::data::DayNote;
 use crate::orm::Orm;

@@ -1,10 +1,7 @@
-use std::collections::HashMap;
-use std::iter::Map;
+use std::collections::{BTreeMap};
 use chrono::{Local, NaiveDate};
 use crate::util::guid_str;
 use serde::{Deserialize, Serialize};
-use crate::part::ItemView;
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NoteItem {
     // 记录主键
@@ -55,20 +52,20 @@ impl NoteItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DayNote {
     day: String,
-    pub(crate) note: HashMap<String, NoteItem>,
+    pub(crate) note: BTreeMap<String, NoteItem>,
 }
 
 impl DayNote {
     pub fn new(day: String) -> Self {
         DayNote {
             day,
-            note: HashMap::new(),
+            note: BTreeMap::new(),
         }
     }
     pub fn with_day(day: String) -> Self {
         DayNote {
             day,
-            note: HashMap::new(),
+            note: BTreeMap::new(),
         }
     }
     pub fn add_note(&mut self, note: NoteItem) {
