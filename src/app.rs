@@ -2,7 +2,6 @@ use crate::view::{CalendarView, InboxView, QuadrantView, ToolkitView};
 use eframe::App;
 use egui::panel::Side;
 use egui::{CentralPanel, Context, SidePanel};
-
 #[derive(PartialEq)]
 pub enum ViewEnum {
     CALENDAR,
@@ -54,7 +53,7 @@ impl NoteDayApp {
 impl App for NoteDayApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         SidePanel::new(Side::Left, "navLeft")
-            .default_width(40.0)
+            .exact_width(40.0)
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
                     ui.selectable_value(&mut self.view_state, ViewEnum::CALENDAR, "日历");

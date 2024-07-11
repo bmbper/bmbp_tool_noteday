@@ -7,10 +7,24 @@ pub fn get_current_y_m_d() -> (i32, u32, u32) {
     let now = Local::now();
     (now.year(), now.month(), now.day())
 }
+
+#[allow(dead_code)]
+pub fn get_now() -> NaiveDate {
+    let now = Local::now();
+    now.date_naive()
+}
+
 #[allow(dead_code)]
 pub fn get_date_time() -> String {
     let now = Local::now();
     let date_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
+    date_time
+}
+
+#[allow(dead_code)]
+pub fn get_date() -> String {
+    let now = Local::now();
+    let date_time = now.format("%Y-%m-%d").to_string();
     date_time
 }
 
@@ -20,6 +34,7 @@ pub fn to_date(day: String) -> NaiveDate {
     }
     return Local::now().date_naive();
 }
+
 #[allow(dead_code)]
 pub fn get_current_calendar_days() -> Vec<String> {
     let now = chrono::Local::now();
@@ -47,6 +62,7 @@ pub fn get_calendar_days(year: i32, month: u32) -> Vec<String> {
     }
     calendar_days
 }
+
 #[allow(dead_code)]
 pub fn get_current_calendar_week_days() -> Vec<String> {
     let now = chrono::Local::now();

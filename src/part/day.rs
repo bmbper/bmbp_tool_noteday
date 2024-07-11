@@ -1,9 +1,13 @@
-use chrono::{Datelike};
+use chrono::Datelike;
+use eframe::epaint::Stroke;
+use eframe::glow::RED;
 use egui::{Align, Color32, Context};
+use egui_extras::StripBuilder;
+
 use crate::data::{DayNote, NoteItem};
 use crate::data::Quadrant::{ImportantLazy, ImportantOnce, NormalLazy, NormalOnce};
 use crate::orm::Orm;
-use crate::util::{to_date};
+use crate::util::{get_now, guid_str, to_date};
 
 use super::ItemView;
 
@@ -12,9 +16,11 @@ pub struct DayView {
     data: Option<DayNote>,
     current_data: Option<NoteItem>,
     show_dialog: bool,
+    current_item_title: String,
 }
 
 impl DayView {
+
     pub(crate) fn with_day(day: String) -> Self {
         let day_note = Orm::read(day.clone());
         DayView {
@@ -22,11 +28,37 @@ impl DayView {
             data: day_note,
             current_data: None,
             show_dialog: false,
+            current_item_title: "".to_string(),
         }
     }
     pub fn reload_data(&mut self) {
         let day_note = Orm::read(self.day.clone());
         self.data = day_note;
+    }
+    pub fn add_item(&mut self, title: String) {
+        let data = NoteItem {
+            id: guid_str(),
+            title: title,
+            content: "".to_string(),
+            quadrant: NormalOnce,
+            desc: "".to_string(),
+            status: false,
+            start_date: get_now(),
+            end_date: get_now(),
+            record_day: self.day.clone(),
+        };
+        self.write_note_item(data);
+    }
+    pub fn write_note_item(&mut self, item: NoteItem) {
+        if let Some(day_note) = self.data.as_mut() {
+            day_note.note.insert(item.id.clone(), item);
+        } else {
+            let mut day_note = DayNote::with_day(self.day.clone());
+            day_note.note.insert(item.id.clone(), item);
+            self.data = Some(day_note);
+        }
+        Orm::write(self.day.clone(), self.data.as_ref().unwrap());
+        self.reload_data();
     }
 }
 
@@ -39,55 +71,53 @@ impl DayView {
 impl DayView {
     pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, current_month: u32) {
         ui.vertical(|ui| {
-            let rect_width = 225.0;
-            let rect_height = 180.0;
-            let rect_title_height = 30.0;
-            let back_ground = if self.is_current_month(current_month) {
-                Color32::WHITE
-            } else {
-                Color32::GRAY
-            };
-            let border_stroke = if self.is_current_month(current_month) {
-                egui::Stroke::new(1.0, egui::Color32::DARK_GRAY)
-            } else {
-                egui::Stroke::new(1.0, egui::Color32::GRAY)
-            };
-
-            egui::Frame::group(ui.style())
-                .fill(back_ground)
-                .stroke(border_stroke)
-                .show(ui, |ui| {
-                    ui.set_width(rect_width.clone());
-                    ui.set_height(rect_height.clone());
-                    ui.with_layout(egui::Layout::top_down_justified(Align::TOP), |ui| {
-                        ui.horizontal(|ui| {
-                            ui.set_height(rect_title_height);
-                            ui.label(self.day.clone());
-                            if self.is_current_month(current_month) {
-                                if ui.button("+").clicked() {
-                                    self.show_dialog = true;
-                                }
-                                if self.show_dialog {
-                                    self.show_add_dialog(ctx, ui);
-                                }
-                            }
-                        });
-                        ui.separator();
-                        egui::ScrollArea::vertical()
-                            .id_source(self.day.clone())
-                            .show(ui, |ui| {
-                                if self.data.is_none() {
+            ui.horizontal(|ui| {
+                StripBuilder::new(ui).size(egui_extras::Size::exact(40.0)).size(egui_extras::Size::remainder()).size(egui_extras::Size::exact(12.0)).horizontal(|mut strip| {
+                    strip.cell(|ui| {
+                        ui.label(self.day.clone());
+                    });
+                    strip.cell(|ui| {
+                        if self.is_current_month(current_month) {
+                            ui.text_edit_singleline(&mut self.current_item_title);
+                        }
+                        ui.input(|key| {
+                            if key.key_pressed(egui::Key::Enter) {
+                                if self.current_item_title.is_empty() {
                                     return;
                                 }
-                                ui.vertical(|ui| {
-                                    let day_note = self.data.as_ref().unwrap().note.clone();
-                                    for (id, note) in day_note {
-                                        ui.horizontal(|ui| {
-                                            ItemView::with_note(self, note).show(ui);
-                                        });
-                                    }
-                                });
+                                let title = self.current_item_title.clone();
+                                self.current_item_title = "".to_string();
+                                self.add_item(title);
+                            }
+                        })
+                    });
+                    strip.cell(|ui| {
+                        if self.is_current_month(current_month) {
+                            if ui.add(egui::Button::new("+").fill(egui::Color32::TRANSPARENT)
+                                .stroke(Stroke::new(0.0, Color32::TRANSPARENT))).clicked() {
+                                self.show_dialog = true;
+                            }
+                            if self.show_dialog {
+                                self.show_add_dialog(ctx, ui);
+                            }
+                        }
+                    });
+                });
+            });
+            ui.separator();
+            egui::ScrollArea::vertical()
+                .id_source(self.day.clone())
+                .show(ui, |ui| {
+                    if self.data.is_none() {
+                        return;
+                    }
+                    ui.vertical(|ui| {
+                        let day_note = self.data.as_ref().unwrap().note.clone();
+                        for (id, note) in day_note {
+                            ui.horizontal(|ui| {
+                                ItemView::with_note(self, note).show(ui);
                             });
+                        }
                     });
                 });
         });
@@ -102,10 +132,6 @@ impl DayView {
             (screen_rect.width() - window_size.x) / 2.0,
             (screen_rect.height() - window_size.y) / 2.0,
         );
-
-        let mut start_date = chrono::offset::Utc::now().date_naive();
-        let mut end_date = chrono::offset::Utc::now().date_naive();
-
         egui::Window::new("增加日志")
             .resizable(false)
             .collapsible(false)
@@ -148,14 +174,7 @@ impl DayView {
                         if ui.button("确定").clicked() {
                             self.show_dialog = false;
                             let data = self.current_data.take().unwrap();
-                            if let Some(day_note) = self.data.as_mut() {
-                                day_note.note.insert(data.id.clone(), data);
-                            } else {
-                                let mut day_note = DayNote::with_day(self.day.clone());
-                                day_note.note.insert(data.id.clone(), data);
-                                self.data = Some(day_note);
-                            }
-                            Orm::write(self.day.clone(), self.data.as_ref().unwrap());
+                            self.write_note_item(data);
                         }
                         if ui.button("取消").clicked() {
                             self.show_dialog = false;
