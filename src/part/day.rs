@@ -71,7 +71,7 @@ impl DayView {
     pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, current_month: u32) {
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
-                StripBuilder::new(ui).size(egui_extras::Size::exact(40.0)).size(egui_extras::Size::remainder()).size(egui_extras::Size::exact(12.0)).horizontal(|mut strip| {
+                StripBuilder::new(ui).size(egui_extras::Size::exact(12.0)).size(egui_extras::Size::remainder()).size(egui_extras::Size::exact(12.0)).horizontal(|mut strip| {
                     strip.cell(|ui| {
                         ui.label(self.day.clone());
                     });
