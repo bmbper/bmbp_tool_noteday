@@ -1,10 +1,10 @@
 use chrono::Datelike;
 use eframe::epaint::Stroke;
-use egui::{ Color32, Context};
+use egui::{Color32, Context, Label, TextWrapMode};
 use egui_extras::StripBuilder;
 
-use crate::data::{DayNote, NoteItem};
 use crate::data::Quadrant::{ImportantLazy, ImportantOnce, NormalLazy, NormalOnce};
+use crate::data::{DayNote, NoteItem};
 use crate::orm::Orm;
 use crate::util::{get_now, guid_str, to_date};
 
@@ -19,7 +19,6 @@ pub struct DayView {
 }
 
 impl DayView {
-
     pub(crate) fn with_day(day: String) -> Self {
         let day_note = Orm::read(day.clone());
         DayView {
@@ -37,7 +36,7 @@ impl DayView {
     pub fn add_item(&mut self, title: String) {
         let data = NoteItem {
             id: guid_str(),
-            title: title,
+            title,
             content: "".to_string(),
             quadrant: NormalOnce,
             desc: "".to_string(),
@@ -68,39 +67,56 @@ impl DayView {
 }
 
 impl DayView {
-    pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, current_month: u32) {
+    pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, colum_width: f32, current_month: u32) {
+        ui.set_width(colum_width);
         ui.vertical(|ui| {
+            ui.set_width(colum_width);
             ui.horizontal(|ui| {
-                StripBuilder::new(ui).size(egui_extras::Size::exact(12.0)).size(egui_extras::Size::remainder()).size(egui_extras::Size::exact(12.0)).horizontal(|mut strip| {
-                    strip.cell(|ui| {
-                        ui.label(self.day.clone());
-                    });
-                    strip.cell(|ui| {
-                        if self.is_current_month(current_month) {
-                            ui.text_edit_singleline(&mut self.current_item_title);
-                        }
-                        ui.input(|key| {
-                            if key.key_pressed(egui::Key::Enter) {
-                                if self.current_item_title.is_empty() {
-                                    return;
+                ui.set_height(24.0);
+                ui.set_width(colum_width);
+                ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    StripBuilder::new(ui)
+                        .size(egui_extras::Size::exact(70.0))
+                        .size(egui_extras::Size::remainder())
+                        .size(egui_extras::Size::exact(18.0))
+                        .horizontal(|mut strip| {
+                            strip.cell(|ui| {
+                                let label = Label::new(self.day.clone())
+                                    .wrap_mode(egui::TextWrapMode::Truncate);
+                                ui.add(label);
+                            });
+                            strip.cell(|ui| {
+                                if self.is_current_month(current_month) {
+                                    ui.text_edit_singleline(&mut self.current_item_title);
                                 }
-                                let title = self.current_item_title.clone();
-                                self.current_item_title = "".to_string();
-                                self.add_item(title);
-                            }
-                        })
-                    });
-                    strip.cell(|ui| {
-                        if self.is_current_month(current_month) {
-                            if ui.add(egui::Button::new("+").fill(egui::Color32::TRANSPARENT)
-                                .stroke(Stroke::new(0.0, Color32::TRANSPARENT))).clicked() {
-                                self.show_dialog = true;
-                            }
-                            if self.show_dialog {
-                                self.show_add_dialog(ctx, ui);
-                            }
-                        }
-                    });
+                                ui.input(|key| {
+                                    if key.key_pressed(egui::Key::Enter) {
+                                        if self.current_item_title.is_empty() {
+                                            return;
+                                        }
+                                        let title = self.current_item_title.clone();
+                                        self.current_item_title = "".to_string();
+                                        self.add_item(title);
+                                    }
+                                })
+                            });
+                            strip.cell(|ui| {
+                                let button = egui::Button::new("+")
+                                    .fill(egui::Color32::TRANSPARENT)
+                                    .stroke(Stroke::new(0.0, Color32::TRANSPARENT))
+                                    .wrap_mode(TextWrapMode::Truncate);
+
+                                if self.is_current_month(current_month) {
+                                    if ui.add(button).clicked() {
+                                        self.show_dialog = true;
+                                    }
+                                    if self.show_dialog {
+                                        self.show_add_dialog(ctx, ui);
+                                    }
+                                }
+                            });
+                        });
                 });
             });
             ui.separator();
@@ -111,9 +127,16 @@ impl DayView {
                         return;
                     }
                     ui.vertical(|ui| {
-                        let mut day_note:Vec<(String, NoteItem)> = self.data.as_ref().unwrap().note.clone().into_iter().collect();
-                        day_note.sort_by(|a,b|a.1.title.cmp(&b.1.title));
-                        for (id, note) in day_note {
+                        let mut day_note: Vec<(String, NoteItem)> = self
+                            .data
+                            .as_ref()
+                            .unwrap()
+                            .note
+                            .clone()
+                            .into_iter()
+                            .collect();
+                        day_note.sort_by(|a, b| a.1.title.cmp(&b.1.title));
+                        for (_, note) in day_note {
                             ui.horizontal(|ui| {
                                 ItemView::with_note(self, note).show(ui);
                             });
@@ -123,7 +146,7 @@ impl DayView {
         });
     }
 
-    pub fn show_add_dialog(&mut self, ctx: &Context, ui: &mut egui::Ui) {
+    pub fn show_add_dialog(&mut self, ctx: &Context, _ui: &mut egui::Ui) {
         self.show_dialog = true;
         println!("===>{}", self.show_dialog);
         let screen_rect = ctx.available_rect();
@@ -145,27 +168,57 @@ impl DayView {
                             .spacing([10.0, 10.0])
                             .striped(true)
                             .show(ui, |ui| {
-                                if (self.current_data.is_none()) {
+                                if self.current_data.is_none() {
                                     self.current_data = Some(NoteItem::with_day(self.day.clone()));
                                 }
                                 ui.label("记录");
-                                ui.text_edit_singleline(&mut self.current_data.as_mut().unwrap().title);
+                                ui.text_edit_singleline(
+                                    &mut self.current_data.as_mut().unwrap().title,
+                                );
                                 ui.end_row();
                                 ui.label("明细");
-                                ui.text_edit_multiline(&mut self.current_data.as_mut().unwrap().desc);
+                                ui.text_edit_multiline(
+                                    &mut self.current_data.as_mut().unwrap().desc,
+                                );
                                 ui.end_row();
                                 ui.label("开始时间");
-                                ui.add(egui_extras::DatePickerButton::new(&mut self.current_data.as_mut().unwrap().start_date).id_source("start"));
+                                ui.add(
+                                    egui_extras::DatePickerButton::new(
+                                        &mut self.current_data.as_mut().unwrap().start_date,
+                                    )
+                                    .id_source("start"),
+                                );
                                 ui.end_row();
                                 ui.label("结束时间");
-                                ui.add(egui_extras::DatePickerButton::new(&mut self.current_data.as_mut().unwrap().end_date).id_source("end"));
+                                ui.add(
+                                    egui_extras::DatePickerButton::new(
+                                        &mut self.current_data.as_mut().unwrap().end_date,
+                                    )
+                                    .id_source("end"),
+                                );
                                 ui.end_row();
                                 ui.label("象限");
                                 ui.horizontal(|ui| {
-                                    ui.radio_value(&mut self.current_data.as_mut().unwrap().quadrant, ImportantOnce, "重要紧急");
-                                    ui.radio_value(&mut self.current_data.as_mut().unwrap().quadrant, ImportantLazy, "紧急不重要");
-                                    ui.radio_value(&mut self.current_data.as_mut().unwrap().quadrant, NormalOnce, "重要不紧急");
-                                    ui.radio_value(&mut self.current_data.as_mut().unwrap().quadrant, NormalLazy, "不重要不紧急");
+                                    ui.radio_value(
+                                        &mut self.current_data.as_mut().unwrap().quadrant,
+                                        ImportantOnce,
+                                        "重要紧急",
+                                    );
+                                    ui.radio_value(
+                                        &mut self.current_data.as_mut().unwrap().quadrant,
+                                        ImportantLazy,
+                                        "紧急不重要",
+                                    );
+                                    ui.radio_value(
+                                        &mut self.current_data.as_mut().unwrap().quadrant,
+                                        NormalOnce,
+                                        "重要不紧急",
+                                    );
+                                    ui.radio_value(
+                                        &mut self.current_data.as_mut().unwrap().quadrant,
+                                        NormalLazy,
+                                        "不重要不紧急",
+                                    );
                                 });
                                 ui.end_row();
                             });

@@ -1,6 +1,7 @@
-use std::collections::{BTreeMap};
-use chrono::{Local, NaiveDate};
+use std::collections::BTreeMap;
+
 use crate::util::guid_str;
+use chrono::{Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NoteItem {
@@ -54,7 +55,7 @@ pub struct DayNote {
     day: String,
     pub(crate) note: BTreeMap<String, NoteItem>,
 }
-
+#[allow(dead_code)]
 impl DayNote {
     pub fn new(day: String) -> Self {
         DayNote {

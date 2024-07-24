@@ -1,11 +1,8 @@
-use crate::util::{get_calendar_week_days, get_current_y_m_d, to_date};
-use eframe::emath::{Align};
-use eframe::epaint::{Color32, Stroke};
-use egui::{Context, Ui};
-use egui::Key::S;
-use egui::UiKind::ScrollArea;
-use egui_extras::{StripBuilder};
 use crate::part::DayView;
+use crate::util::{get_calendar_week_days, get_current_y_m_d};
+use eframe::emath::Align;
+use eframe::epaint::{Color32, Stroke};
+use egui::{vec2, Context, Ui};
 
 pub struct CalendarView {
     current_year: i32,
@@ -57,10 +54,13 @@ impl CalendarView {
 
 impl CalendarView {
     pub fn show(&mut self, ctx: &Context, ui: &mut Ui) {
-        let cell_width = 175.0;
-        let cell_height = 160.0;
-        StripBuilder::new(ui).size(egui_extras::Size::exact(24.0)).size(egui_extras::Size::exact(2.0)).size(egui_extras::Size::remainder()).vertical(|mut strip| {
-            strip.cell(|ui| {
+        let width = ui.available_width();
+        let height = ui.available_height();
+        let bar_height = 24.0;
+        let body_height = height - bar_height - 6.0;
+        ui.vertical(|ui| {
+            ui.horizontal(|ui| {
+                ui.set_height(bar_height);
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
                     if ui.button("上").clicked() {
                         self.on_pre_month();
@@ -74,47 +74,52 @@ impl CalendarView {
                     let _ = ui.button("年");
                 });
             });
-            strip.cell(|ui| {
-                ui.separator();
-            });
-            strip.cell(|ui| {
-                egui::ScrollArea::both().show(ui, |ui| {
-                    StripBuilder::new(ui).size(egui_extras::Size::exact(24.0)).sizes(egui_extras::Size::remainder(), 5).vertical(|mut strip| {
-                        let week_days = ["一", "二", "三", "四", "五", "六", "日"];
-                        // 工作项
-                        for row_index in 0..6 {
-                            strip.strip(|sub_strip| {
-                                sub_strip.sizes(egui_extras::Size::remainder(), 7).horizontal(|mut strip| {
-                                    for col_index in 0..7 {
-                                        if row_index == 0 {
-                                            strip.cell(|ui| {
-                                                ui.set_width(cell_width);
-                                                ui.with_layout(egui::Layout::top_down(Align::Center), |ui| {
-                                                    ui.label(format!("星期{}", week_days[col_index]));
-                                                });
-                                            });
-                                        } else {
-                                            strip.cell(|ui| {
-                                                ui.vertical(|ui| {
-                                                    ui.set_width(cell_width);
-                                                    let item_view = &mut self.item_view[(row_index - 1) * 7 + col_index];
-                                                    let mut fill_color = Color32::WHITE;
-                                                    if !item_view.is_current_month(self.current_month.clone()) {
-                                                        fill_color = Color32::LIGHT_GRAY;
-                                                    }
-                                                    egui::Frame::default().inner_margin(4.0).fill(fill_color).stroke(Stroke::new(1.0, Color32::LIGHT_GRAY)).show(ui, |ui| {
-                                                        ui.set_min_height(cell_height);
-                                                        item_view.show(ctx, ui, self.current_month.clone());
-                                                    });
-                                                });
-                                            });
-                                        }
-                                    }
-                                });
-                            });
+            ui.separator();
+            ui.horizontal(|ui| {
+                let week_days = ["一", "二", "三", "四", "五", "六", "日"];
+                let week_height = 24.0;
+                let column_width = (width / 7.0) - 10.0;
+                let column_height = ((body_height - week_height) / 5.0) - 11.0;
+                egui::Grid::new("calc_id")
+                    .spacing(vec2(2.0, 2.0))
+                    .striped(true)
+                    .show(ui, |ui| {
+                        for row in 0..6 {
+                            for col in 0..7 {
+                                if row == 0 {
+                                    egui::Frame::none()
+                                        .stroke(Stroke::new(0.0, Color32::GRAY))
+                                        .show(ui, |ui| {
+                                            ui.set_width(column_width);
+                                            ui.set_height(week_height);
+                                            ui.with_layout(
+                                                egui::Layout::top_down(Align::Center),
+                                                |ui| {
+                                                    ui.label(format!("星期{}", week_days[col]));
+                                                },
+                                            );
+                                        });
+                                } else {
+                                    egui::Frame::none()
+                                        .stroke(Stroke::new(1.0, Color32::GRAY))
+                                        .inner_margin(4.0)
+                                        .show(ui, |ui| {
+                                            ui.set_width(column_width);
+                                            ui.set_height(column_height);
+                                            let item_view =
+                                                &mut self.item_view[(row - 1) * 7 + col];
+                                            item_view.show(
+                                                ctx,
+                                                ui,
+                                                column_width,
+                                                self.current_month.clone(),
+                                            );
+                                        });
+                                }
+                            }
+                            ui.end_row();
                         }
                     });
-                });
             });
         });
     }

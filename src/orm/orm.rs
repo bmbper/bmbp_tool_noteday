@@ -1,15 +1,13 @@
-use std::sync::{OnceLock, RwLock};
 use redb::{Database, TableDefinition};
-use serde::{Deserialize, Serialize};
-
+use serde::Deserialize;
+use std::sync::{OnceLock, RwLock};
 
 const NOTE_TABLE: TableDefinition<String, String> = TableDefinition::new("bmbp_day_note");
-
 
 fn orm() -> &'static RwLock<Database> {
     static ORM_LOCK: OnceLock<RwLock<Database>> = OnceLock::new();
     ORM_LOCK.get_or_init(|| {
-        let mut db = Database::create("./note.eif").unwrap();
+        let db = Database::create("./note.eif").unwrap();
         let tx = db.begin_write().unwrap();
         tx.open_table(NOTE_TABLE).unwrap();
         tx.commit().unwrap();
@@ -20,7 +18,10 @@ fn orm() -> &'static RwLock<Database> {
 pub struct Orm {}
 
 impl Orm {
-    pub fn read<'a, T>(day: String) -> Option<T> where T: for<'de> Deserialize<'de> {
+    pub fn read<'a, T>(day: String) -> Option<T>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
         let data = Orm::read_data(day);
         if data.is_empty() {
             return None;
@@ -38,32 +39,22 @@ impl Orm {
     }
     pub fn read_data(day: String) -> String {
         return match orm().read().unwrap().begin_read() {
-            Ok(tx) => {
-                match tx.open_table(NOTE_TABLE) {
-                    Ok(mut table) => {
-                        match table.get(day) {
-                            Ok(record) => {
-                                match record {
-                                    Some(v) => {
-                                        v.value().to_string()
-                                    }
-                                    None => {
-                                        "".to_string()
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                println!("{}", e);
-                                "".to_string()
-                            }
-                        }
-                    }
+            Ok(tx) => match tx.open_table(NOTE_TABLE) {
+                Ok(table) => match table.get(day) {
+                    Ok(record) => match record {
+                        Some(v) => v.value().to_string(),
+                        None => "".to_string(),
+                    },
                     Err(e) => {
                         println!("{}", e);
                         "".to_string()
                     }
+                },
+                Err(e) => {
+                    println!("{}", e);
+                    "".to_string()
                 }
-            }
+            },
             Err(e) => {
                 println!("{}", e);
                 "".to_string()
@@ -80,7 +71,7 @@ impl Orm {
                 match tx.open_table(NOTE_TABLE) {
                     Ok(mut table) => {
                         match table.insert(day, content) {
-                            Ok(v) => {}
+                            Ok(_) => {}
                             Err(err) => {
                                 println!("{}", err);
                             }
