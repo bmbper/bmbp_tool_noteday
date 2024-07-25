@@ -100,14 +100,21 @@ impl CalendarView {
                                             );
                                         });
                                 } else {
+                                    let item_view = &mut self.item_view[(row - 1) * 7 + col];
+                                    let fill_color =
+                                        if item_view.is_current_month(self.current_month.clone()) {
+                                            Color32::WHITE
+                                        } else {
+                                            Color32::LIGHT_GRAY
+                                        };
                                     egui::Frame::none()
                                         .stroke(Stroke::new(1.0, Color32::GRAY))
+                                        .fill(fill_color)
                                         .inner_margin(4.0)
                                         .show(ui, |ui| {
                                             ui.set_width(column_width);
                                             ui.set_height(column_height);
-                                            let item_view =
-                                                &mut self.item_view[(row - 1) * 7 + col];
+
                                             item_view.show(
                                                 ctx,
                                                 ui,
