@@ -1,8 +1,13 @@
 [package]
-name = "egui-noteday"
+name = "bmbp_tool_noteday"
 version = "0.1.0"
 edition = "2021"
-
+authors = ["bmbp<rs_bmbp.163.com>"]
+description="基于EGUI的日志小工具"
+license="LICENSE"
+homepage="https://github.com/bmbper/bmbp_tool_noteday"
+repository="https://github.com/bmbper/bmbp_tool_noteday"
+documentation="https://github.com/bmbper/bmbp_tool_noteday"
 [profile.release]
 strip = true  # 自动从二进制文件去除符号信息.
 opt-level = "z"
