@@ -91,3 +91,19 @@ pub fn get_calendar_week_days(year: i32, month: u32) -> Vec<String> {
     }
     calendar_days
 }
+
+pub fn get_current_week_days() -> Vec<String> {
+    let tody = Local::now().date_naive();
+    let first_day_week_day = tody.clone().weekday().num_days_from_monday();
+    // 补全前几天
+    let mut week_day = vec![tody.clone().format("%Y-%m-%d").to_string()];
+    for index in 0..first_day_week_day {
+        let pre_day = tody.clone().sub(Duration::days((index + 1) as i64));
+        week_day.insert(0, pre_day.format("%Y-%m-%d").to_string());
+    }
+    for index in 0..(7 - first_day_week_day - 1) {
+        let next_day = tody.clone().add(Duration::days((index + 1) as i64));
+        week_day.push(next_day.format("%Y-%m-%d").to_string());
+    }
+    week_day
+}

@@ -1,14 +1,17 @@
+use crate::data::DayNote;
+use crate::orm::Orm;
 use crate::part::DayView;
-use crate::util::{get_calendar_week_days, get_current_y_m_d};
+use crate::util::{get_calendar_week_days, get_current_week_days, get_current_y_m_d};
 use eframe::emath::Align;
 use eframe::epaint::{Color32, Stroke};
-use egui::{vec2, Context, Ui};
-
+use egui::{vec2, Context, TextWrapMode, Ui};
 pub struct CalendarView {
     current_year: i32,
     current_month: u32,
     current_days: Vec<String>,
     item_view: Vec<DayView>,
+    week_report_show: bool,
+    week_report: Vec<String>,
 }
 
 impl CalendarView {
@@ -19,6 +22,8 @@ impl CalendarView {
             current_year,
             current_month,
             item_view: vec![],
+            week_report_show: false,
+            week_report: vec![],
         };
         cal.init_data();
         cal
@@ -31,6 +36,24 @@ impl CalendarView {
         for day in &self.current_days {
             self.item_view.push(DayView::with_day(day.clone()));
         }
+    }
+    pub fn read_week_data(&mut self) {
+        let week_days = get_current_week_days();
+        let mut items = vec![];
+        for day in week_days.as_slice() {
+            if let Some(day_note) = Orm::read::<DayNote>(day.clone()) {
+                let item_map = &day_note.note;
+                for (_, item) in item_map.iter() {
+                    let content = if item.content.is_empty() {
+                        format!("{}", item.title)
+                    } else {
+                        format!("{}，主要内容是{}", item.title, item.content)
+                    };
+                    items.push(content);
+                }
+            }
+        }
+        self.week_report = items;
     }
     pub fn on_next_month(&mut self) {
         if self.current_month == 12 {
@@ -53,6 +76,47 @@ impl CalendarView {
 }
 
 impl CalendarView {
+    pub fn show_week_report(&mut self, ctx: &Context, _ui: &mut egui::Ui) {
+        let screen_rect = ctx.available_rect();
+        let window_size = egui::vec2(600.0, 480.0);
+        let window_pos = egui::pos2(
+            (screen_rect.width() - window_size.x) / 2.0,
+            (screen_rect.height() - window_size.y) / 2.0,
+        );
+        egui::Window::new("查看周报")
+            .resizable(false)
+            .collapsible(false)
+            .fixed_size(window_size)
+            .default_pos(window_pos)
+            .title_bar(true)
+            .show(ctx, |ui| {
+                ui.set_min_size(window_size);
+                let body_width = ui.available_width();
+                let bottom_bar_height = 32.0;
+                let body_height = ui.available_height() - bottom_bar_height;
+                egui::Frame::none().show(ui, |ui| {
+                    ui.set_height(body_height);
+                    egui::ScrollArea::both().show(ui, |ui| {
+                        ui.set_min_height(body_height);
+                        ui.set_min_width(body_width);
+                        for item in self.week_report.as_slice() {
+                            let label =
+                                egui::Label::new(item.clone()).wrap_mode(TextWrapMode::Truncate);
+                            ui.add(label);
+                        }
+                    });
+                });
+                ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
+                    ui.set_height(bottom_bar_height);
+                    if ui.button("确定").clicked() {
+                        self.week_report_show = false;
+                    }
+                });
+            });
+    }
+}
+
+impl CalendarView {
     pub fn show(&mut self, ctx: &Context, ui: &mut Ui) {
         let width = ui.available_width();
         let height = ui.available_height();
@@ -69,9 +133,17 @@ impl CalendarView {
                         self.on_next_month();
                     }
                     ui.separator();
-                    let _ = ui.button("月");
-                    let _ = ui.button("周");
-                    let _ = ui.button("年");
+                    let _ = ui.button("日报");
+                    ui.separator();
+                    if ui.button("周报").clicked() {
+                        self.read_week_data();
+                        self.week_report_show = true;
+                    }
+                    if self.week_report_show {
+                        self.show_week_report(ctx, ui);
+                    }
+                    ui.separator();
+                    let _ = ui.button("月报");
                 });
             });
             ui.separator();

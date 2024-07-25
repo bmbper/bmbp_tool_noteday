@@ -20,7 +20,7 @@ pub struct DayView {
 
 impl DayView {
     pub(crate) fn with_day(day: String) -> Self {
-        let day_note = Orm::read(day.clone());
+        let day_note = Orm::read::<DayNote>(day.clone());
         DayView {
             day,
             data: day_note,
