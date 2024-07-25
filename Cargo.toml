@@ -3,6 +3,12 @@ name = "egui-noteday"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+strip = true  # 自动从二进制文件去除符号信息.
+opt-level = "z"
+lto = true
+codegen-units = 1
+
 [dependencies]
 # UI 库
 egui = "0.28.1"
