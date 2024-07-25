@@ -5,6 +5,7 @@ edition = "2021"
 authors = ["bmbp<rs_bmbp.163.com>"]
 description="基于EGUI的日志小工具"
 license="LICENSE"
+readme = "README.md"
 homepage="https://github.com/bmbper/bmbp_tool_noteday"
 repository="https://github.com/bmbper/bmbp_tool_noteday"
 documentation="https://github.com/bmbper/bmbp_tool_noteday"
