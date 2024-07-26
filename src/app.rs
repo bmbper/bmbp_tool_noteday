@@ -31,9 +31,8 @@ impl NoteDayApp {
     }
     fn set_app_fonts(ctx: &eframe::CreationContext<'_>) {
         // 加载自定义字体数据
-        let font_data =
-            egui::FontData::from_static(include_bytes!("../fonts/SourceHanSerifCN-Regular.otf")); // 替换为你的字体文件路径
-                                                                                                  // 定义字体家族，关联字体数据
+        let font_data = egui::FontData::from_static(include_bytes!("../fonts/syst.otf")); // 替换为你的字体文件路径
+                                                                                          // 定义字体家族，关联字体数据
         let mut fonts = egui::FontDefinitions::default();
         fonts.font_data.insert("app_font".to_owned(), font_data);
         // 将自定义字体设为默认的中文字体
