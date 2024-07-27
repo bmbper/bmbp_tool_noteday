@@ -83,36 +83,43 @@ impl CalendarView {
             (screen_rect.width() - window_size.x) / 2.0,
             (screen_rect.height() - window_size.y) / 2.0,
         );
-        egui::Window::new("查看周报")
-            .resizable(false)
-            .collapsible(false)
-            .fixed_size(window_size)
-            .default_pos(window_pos)
-            .title_bar(true)
-            .show(ctx, |ui| {
-                ui.set_min_size(window_size);
-                let body_width = ui.available_width();
-                let bottom_bar_height = 32.0;
-                let body_height = ui.available_height() - bottom_bar_height;
-                egui::Frame::none().show(ui, |ui| {
-                    ui.set_height(body_height);
-                    egui::ScrollArea::both().show(ui, |ui| {
-                        ui.set_min_height(body_height);
-                        ui.set_min_width(body_width);
-                        for item in self.week_report.as_slice() {
-                            let label =
-                                egui::Label::new(item.clone()).wrap_mode(TextWrapMode::Truncate);
-                            ui.add(label);
+        let mut week_show = self.week_report_show;
+        if week_show {
+            egui::Window::new("查看周报")
+                .resizable(false)
+                .collapsible(false)
+                .fixed_size(window_size)
+                .default_pos(window_pos)
+                .title_bar(true).open(&mut week_show)
+                .show(ctx, |ui| {
+                    ui.set_min_size(window_size);
+                    let body_width = ui.available_width();
+                    let bottom_bar_height = 32.0;
+                    let body_height = ui.available_height() - bottom_bar_height;
+                    egui::Frame::none().show(ui, |ui| {
+                        ui.set_height(body_height);
+                        egui::ScrollArea::both().show(ui, |ui| {
+                            ui.set_min_height(body_height);
+                            ui.set_min_width(body_width);
+                            for item in self.week_report.as_slice() {
+                                let label =
+                                    egui::Label::new(item.clone()).wrap_mode(TextWrapMode::Truncate);
+                                ui.add(label);
+                            }
+                        });
+                    });
+                    ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
+                        ui.set_height(bottom_bar_height);
+                        if ui.button("确定").clicked() {
+                            self.week_report_show = false;
                         }
                     });
                 });
-                ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
-                    ui.set_height(bottom_bar_height);
-                    if ui.button("确定").clicked() {
-                        self.week_report_show = false;
-                    }
-                });
-            });
+        }
+        if !week_show{
+             self.week_report_show = false;
+        }
+
     }
 }
 
