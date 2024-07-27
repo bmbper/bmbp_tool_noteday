@@ -90,7 +90,8 @@ impl CalendarView {
                 .collapsible(false)
                 .fixed_size(window_size)
                 .default_pos(window_pos)
-                .title_bar(true).open(&mut week_show)
+                .title_bar(true)
+                .open(&mut week_show)
                 .show(ctx, |ui| {
                     ui.set_min_size(window_size);
                     let body_width = ui.available_width();
@@ -102,8 +103,8 @@ impl CalendarView {
                             ui.set_min_height(body_height);
                             ui.set_min_width(body_width);
                             for item in self.week_report.as_slice() {
-                                let label =
-                                    egui::Label::new(item.clone()).wrap_mode(TextWrapMode::Truncate);
+                                let label = egui::Label::new(item.clone())
+                                    .wrap_mode(TextWrapMode::Truncate);
                                 ui.add(label);
                             }
                         });
@@ -116,10 +117,9 @@ impl CalendarView {
                     });
                 });
         }
-        if !week_show{
-             self.week_report_show = false;
+        if !week_show {
+            self.week_report_show = false;
         }
-
     }
 }
 
