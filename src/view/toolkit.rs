@@ -35,17 +35,21 @@ impl ToolkitView {
                                 egui_extras::StripBuilder::new(ui)
                                     .size(egui_extras::Size::exact(20.0))
                                     .size(egui_extras::Size::remainder())
-                                    .size(egui_extras::Size::exact(20.0))
                                     .vertical(|mut strip| {
                                         if self.tool.len() > index {
                                             let view = self.tool[index].as_mut();
                                             strip.cell(|ui| {
-                                                ui.label(view.title());
+                                                ui.with_layout(
+                                                    egui::Layout::top_down(egui::Align::Center),
+                                                    |ui| {
+                                                        ui.label(view.title());
+                                                    },
+                                                );
                                             });
-                                            strip.cell(|ui| {});
-                                            strip.cell(|ui| {});
+                                            strip.cell(|ui| {
+                                                view.show(ui);
+                                            });
                                         } else {
-                                            strip.cell(|ui| {});
                                             strip.cell(|ui| {});
                                             strip.cell(|ui| {});
                                         }
