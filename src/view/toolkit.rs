@@ -50,8 +50,8 @@ impl ToolkitView {
                                                 view.show(ui);
                                             });
                                         } else {
-                                            strip.cell(|ui| {});
-                                            strip.cell(|ui| {});
+                                            strip.cell(|_ui| {});
+                                            strip.cell(|_ui| {});
                                         }
                                     });
                             });

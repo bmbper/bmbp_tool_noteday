@@ -1,6 +1,5 @@
 use crate::part::NotePartView;
-use egui::{style::Spacing, RichText, Ui};
-use egui_extras::StripBuilder;
+use egui::{RichText, Ui};
 pub struct Md5View {
     source: String,
     target: String,
@@ -18,8 +17,6 @@ impl NotePartView for Md5View {
         "MD5".to_string()
     }
     fn show(&mut self, ui: &mut Ui) {
-        let width = ui.available_width();
-        let height = ui.available_height();
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
                 ui.set_height(24.0);

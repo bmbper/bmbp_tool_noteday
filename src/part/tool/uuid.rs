@@ -14,7 +14,7 @@ impl UuidView {
     }
     pub fn generate_id(&mut self) {
         self.id_vec = vec![];
-        for index in 0..self.id_count {
+        for _ in 0..self.id_count {
             let id = Uuid::new_v4().to_string().replace("-", "");
             self.id_vec.push(id);
         }
