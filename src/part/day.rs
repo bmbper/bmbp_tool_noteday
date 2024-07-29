@@ -1,5 +1,6 @@
 use chrono::Datelike;
 use eframe::epaint::Stroke;
+use egui::ahash::{HashMap, HashMapExt};
 use egui::{Color32, Context, Label, TextWrapMode};
 use egui_extras::StripBuilder;
 
@@ -16,22 +17,34 @@ pub struct DayView {
     current_data: Option<NoteItem>,
     show_dialog: bool,
     current_item_title: String,
+    items: HashMap<String, ItemView>,
 }
 
 impl DayView {
     pub(crate) fn with_day(day: String) -> Self {
-        let day_note = Orm::read::<DayNote>(day.clone());
-        DayView {
+        let mut day_view = DayView {
             day,
-            data: day_note,
+            data: None,
             current_data: None,
             show_dialog: false,
             current_item_title: "".to_string(),
-        }
+            items: HashMap::new(),
+        };
+        day_view.reload_data();
+        day_view
     }
     pub fn reload_data(&mut self) {
-        let day_note = Orm::read(self.day.clone());
+        let day_note = Orm::read::<DayNote>(self.day.clone());
         self.data = day_note;
+        if let Some(note) = self.data.as_ref() {
+            for (_, item_temp) in note.note.clone() {
+                let item_id = item_temp.id.clone();
+                if !self.items.contains_key(&item_id) {
+                    self.items
+                        .insert(item_temp.id.clone(), ItemView::with_note(item_temp));
+                }
+            }
+        }
     }
     pub fn add_item(&mut self, title: String) {
         let data = NoteItem::with_title(self.day.clone(), title);
@@ -58,6 +71,7 @@ impl DayView {
 
 impl DayView {
     pub fn show(&mut self, ctx: &Context, ui: &mut egui::Ui, colum_width: f32, current_month: u32) {
+        self.reload_data();
         ui.set_width(colum_width);
         ui.vertical(|ui| {
             ui.set_width(colum_width);
@@ -128,7 +142,9 @@ impl DayView {
                         day_note.sort_by(|a, b| a.1.title.cmp(&b.1.title));
                         for (_, note) in day_note {
                             ui.horizontal(|ui| {
-                                ItemView::with_note(self, note).show(ui);
+                                if self.items.contains_key(note.id.as_str()) {
+                                    self.items.get_mut(note.id.as_str()).unwrap().show(ui);
+                                }
                             });
                         }
                     });

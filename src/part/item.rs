@@ -1,34 +1,32 @@
 use crate::data::DayNote;
 use crate::data::NoteItem;
 use crate::orm::Orm;
-use crate::part::DayView;
 use crate::util::get_now;
 use eframe::epaint::text::TextWrapMode;
 use egui::{Color32, Stroke, Ui};
 use egui_extras::StripBuilder;
 
-pub struct ItemView<'a> {
+pub struct ItemView {
     pub day: String,
     pub data: NoteItem,
-    parent: &'a mut DayView,
+    pub current_title: String,
 }
 
-impl<'a> ItemView<'a> {
-    pub fn with_note(parent: &'a mut DayView, note: NoteItem) -> Self {
+impl ItemView {
+    pub fn with_note(note: NoteItem) -> Self {
         ItemView {
             day: note.record_day.clone(),
             data: note,
-            parent,
+            current_title: "".to_string(),
         }
     }
     pub fn save_data(&mut self, status: bool) {
         let day = self.day.clone();
-        let mut data = self.data.clone();
-        data.status = status;
+        self.data.status = status.clone();
+        let data = self.data.clone();
         let mut day_note = Orm::read::<DayNote>(day).unwrap();
         day_note.note.insert(data.id.clone(), data);
         Orm::write::<DayNote>(self.day.clone(), day_note);
-        self.parent.reload_data();
     }
     pub fn remove_data(&mut self) {
         let day = self.day.clone();
@@ -36,11 +34,10 @@ impl<'a> ItemView<'a> {
         let mut day_note = Orm::read::<DayNote>(day).unwrap();
         day_note.note.remove(&data.id);
         Orm::write::<DayNote>(self.day.clone(), day_note);
-        self.parent.reload_data();
     }
 }
 
-impl<'a> ItemView<'a> {
+impl ItemView {
     pub fn show(&mut self, ui: &mut Ui) {
         ui.vertical(|ui| {
             ui.set_height(24.0);
@@ -74,7 +71,7 @@ impl<'a> ItemView<'a> {
                                 )
                                 .clicked()
                             {
-                                self.data.end_date = get_now();
+                                // self.data.end_date = get_now();
                                 self.save_data(false);
                             }
                         }
@@ -90,16 +87,24 @@ impl<'a> ItemView<'a> {
                                 self.save_data(self.data.status);
                             }
                         } else {
-                            let input_title = ui.text_edit_singleline(&mut self.data.title);
-                            if input_title.changed() {
-                                self.save_data(false);
+                            if self.current_title.is_empty() {
+                                self.current_title = self.data.title.clone();
                             }
+                            let input_title = ui.text_edit_singleline(&mut self.current_title);
                             if input_title.lost_focus() {
+                                if !self.current_title.is_empty() {
+                                    self.data.title = self.current_title.clone();
+                                    self.current_title = "".to_string();
+                                }
                                 self.data.is_edit = Some(false);
                                 self.save_data(false);
                             }
                             ui.input(|key| {
                                 if key.key_pressed(egui::Key::Enter) {
+                                    if !self.current_title.is_empty() {
+                                        self.data.title = self.current_title.clone();
+                                        self.current_title = "".to_string();
+                                    }
                                     self.data.is_edit = Some(false);
                                     self.save_data(false);
                                 }

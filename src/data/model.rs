@@ -70,7 +70,7 @@ impl NoteItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DayNote {
     day: String,
-    pub(crate) note: BTreeMap<String, NoteItem>,
+    pub note: BTreeMap<String, NoteItem>,
 }
 #[allow(dead_code)]
 impl DayNote {
