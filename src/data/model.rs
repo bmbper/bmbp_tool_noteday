@@ -23,7 +23,7 @@ pub struct NoteItem {
     // 记录日期
     pub record_day: String,
     // 当前状态是否编辑
-    pub is_edit: bool,
+    pub is_edit: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Default, Clone)]
@@ -48,7 +48,7 @@ impl NoteItem {
             status: false,
             record_day: day,
             quadrant: Quadrant::ImportantOnce,
-            is_edit: false,
+            is_edit: None,
         }
     }
     pub fn with_title(day: String, title: String) -> Self {
@@ -62,7 +62,7 @@ impl NoteItem {
             start_date: get_now(),
             end_date: get_now(),
             record_day: day,
-            is_edit: false,
+            is_edit: None,
         }
     }
 }

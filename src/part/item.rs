@@ -80,28 +80,30 @@ impl<'a> ItemView<'a> {
                         }
                     });
                     strip.cell(|ui| {
-                        if self.data.is_edit {
+                        if self.data.is_edit.is_none()
+                            || self.data.is_edit.as_ref().unwrap().clone()
+                        {
+                            let label = egui::Label::new(self.data.title.clone())
+                                .wrap_mode(TextWrapMode::Truncate);
+                            if ui.add(label).clicked() {
+                                self.data.is_edit = Some(true);
+                                self.save_data(self.data.status);
+                            }
+                        } else {
                             let input_title = ui.text_edit_singleline(&mut self.data.title);
                             if input_title.changed() {
                                 self.save_data(false);
                             }
                             if input_title.lost_focus() {
-                                self.data.is_edit = false;
+                                self.data.is_edit = Some(false);
                                 self.save_data(false);
                             }
                             ui.input(|key| {
                                 if key.key_pressed(egui::Key::Enter) {
-                                    self.data.is_edit = false;
+                                    self.data.is_edit = Some(false);
                                     self.save_data(false);
                                 }
                             });
-                        } else {
-                            let label = egui::Label::new(self.data.title.clone())
-                                .wrap_mode(TextWrapMode::Truncate);
-                            if ui.add(label).clicked() {
-                                self.data.is_edit = true;
-                                self.save_data(self.data.status);
-                            }
                         }
                     });
                     strip.cell(|ui| {
