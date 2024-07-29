@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::util::{get_now, guid_str};
 use chrono::{Local, NaiveDate};
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct NoteItem {
     // 记录主键
     pub id: String,
