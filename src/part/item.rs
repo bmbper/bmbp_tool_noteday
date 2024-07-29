@@ -81,7 +81,7 @@ impl<'a> ItemView<'a> {
                     });
                     strip.cell(|ui| {
                         if self.data.is_edit.is_none()
-                            || self.data.is_edit.as_ref().unwrap().clone()
+                            || !self.data.is_edit.as_ref().unwrap().clone()
                         {
                             let label = egui::Label::new(self.data.title.clone())
                                 .wrap_mode(TextWrapMode::Truncate);
