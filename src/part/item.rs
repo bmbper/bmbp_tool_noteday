@@ -2,6 +2,7 @@ use crate::data::DayNote;
 use crate::data::NoteItem;
 use crate::orm::Orm;
 use crate::part::DayView;
+use crate::util::get_now;
 use eframe::epaint::text::TextWrapMode;
 use egui::{Color32, Stroke, Ui};
 use egui_extras::StripBuilder;
@@ -73,14 +74,35 @@ impl<'a> ItemView<'a> {
                                 )
                                 .clicked()
                             {
+                                self.data.end_date = get_now();
                                 self.save_data(false);
                             }
                         }
                     });
                     strip.cell(|ui| {
-                        let label = egui::Label::new(self.data.title.clone())
-                            .wrap_mode(TextWrapMode::Truncate);
-                        ui.add(label);
+                        if self.data.is_edit {
+                            let input_title = ui.text_edit_singleline(&mut self.data.title);
+                            if input_title.changed() {
+                                self.save_data(false);
+                            }
+                            if input_title.lost_focus() {
+                                self.data.is_edit = false;
+                                self.save_data(false);
+                            }
+                            ui.input(|key| {
+                                if key.key_pressed(egui::Key::Enter) {
+                                    self.data.is_edit = false;
+                                    self.save_data(false);
+                                }
+                            });
+                        } else {
+                            let label = egui::Label::new(self.data.title.clone())
+                                .wrap_mode(TextWrapMode::Truncate);
+                            if ui.add(label).clicked() {
+                                self.data.is_edit = true;
+                                self.save_data(self.data.status);
+                            }
+                        }
                     });
                     strip.cell(|ui| {
                         if ui

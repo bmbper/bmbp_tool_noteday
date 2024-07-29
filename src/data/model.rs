@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::util::guid_str;
+use crate::util::{get_now, guid_str};
 use chrono::{Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -22,6 +22,8 @@ pub struct NoteItem {
     pub status: bool,
     // 记录日期
     pub record_day: String,
+    // 当前状态是否编辑
+    pub is_edit: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Default, Clone)]
@@ -46,6 +48,21 @@ impl NoteItem {
             status: false,
             record_day: day,
             quadrant: Quadrant::ImportantOnce,
+            is_edit: false,
+        }
+    }
+    pub fn with_title(day: String, title: String) -> Self {
+        NoteItem {
+            id: guid_str(),
+            title,
+            content: "".to_string(),
+            quadrant: Quadrant::NormalOnce,
+            desc: "".to_string(),
+            status: false,
+            start_date: get_now(),
+            end_date: get_now(),
+            record_day: day,
+            is_edit: false,
         }
     }
 }

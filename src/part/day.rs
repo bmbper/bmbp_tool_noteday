@@ -6,7 +6,7 @@ use egui_extras::StripBuilder;
 use crate::data::Quadrant::{ImportantLazy, ImportantOnce, NormalLazy, NormalOnce};
 use crate::data::{DayNote, NoteItem};
 use crate::orm::Orm;
-use crate::util::{get_now, guid_str, to_date};
+use crate::util::to_date;
 
 use super::ItemView;
 
@@ -34,17 +34,7 @@ impl DayView {
         self.data = day_note;
     }
     pub fn add_item(&mut self, title: String) {
-        let data = NoteItem {
-            id: guid_str(),
-            title,
-            content: "".to_string(),
-            quadrant: NormalOnce,
-            desc: "".to_string(),
-            status: false,
-            start_date: get_now(),
-            end_date: get_now(),
-            record_day: self.day.clone(),
-        };
+        let data = NoteItem::with_title(self.day.clone(), title);
         self.write_note_item(data);
     }
     pub fn write_note_item(&mut self, item: NoteItem) {
@@ -148,7 +138,6 @@ impl DayView {
 
     pub fn show_add_dialog(&mut self, ctx: &Context, _ui: &mut egui::Ui) {
         self.show_dialog = true;
-        println!("===>{}", self.show_dialog);
         let screen_rect = ctx.available_rect();
         let window_size = egui::vec2(700.0, 800.0);
         let window_pos = egui::pos2(
